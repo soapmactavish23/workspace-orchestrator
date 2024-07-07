@@ -1,4 +1,4 @@
-package br.com.microservices.orchestrated.productvalidationservice.config.kafka;
+package br.com.microservices.orchestrated.orchestratorservice.config.kafka;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,13 +20,14 @@ import org.springframework.kafka.core.ProducerFactory;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 
+import br.com.microservices.orchestrated.orchestratorservice.core.enums.ETopics;
 import lombok.RequiredArgsConstructor;
 
 @EnableKafka
 @Configuration
 @RequiredArgsConstructor
 public class KafkaConfig {
-	
+
 	private static final Integer PARTITION_COUNT = 1;
 	private static final Integer REPLICA_COUNT = 1;
 
@@ -38,15 +39,6 @@ public class KafkaConfig {
 
 	@Value("${spring.kafka.consumer.auto-offset-reset}")
 	private String autoOffsetReset;
-	
-	@Value("${spring.kafka.topic.orchestrator}")
-	private String orchestratorTopic;
-
-	@Value("${spring.kafka.topic.product-validation-success}")
-	private String productValidationSuccessTopic;
-	
-	@Value("${spring.kafka.topic.product-validation-fail}")
-	private String productValidationFailTopic;
 
 	@Bean
 	public ConsumerFactory<String, String> consumerFactory() {
@@ -62,12 +54,12 @@ public class KafkaConfig {
 		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
 		return props;
 	}
-	
+
 	@Bean
 	public ProducerFactory<String, String> producerFactory() {
 		return new DefaultKafkaProducerFactory<>(producerProps());
 	}
-	
+
 	private Map<String, Object> producerProps() {
 		var props = new HashMap<String, Object>();
 		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -75,29 +67,64 @@ public class KafkaConfig {
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		return props;
 	}
-	
+
 	@Bean
 	public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
 		return new KafkaTemplate<>(producerFactory);
 	}
-	
+
 	private NewTopic buildTopic(String name) {
 		return TopicBuilder.name(name).replicas(REPLICA_COUNT).partitions(PARTITION_COUNT).build();
 	}
-	
+
 	@Bean
-	public NewTopic orchestratorTopic() {
-		return buildTopic(orchestratorTopic);
+	public NewTopic startSagaTopic() {
+		return buildTopic(ETopics.START_SAGA.getTopic());
 	}
-	
+
+	@Bean
+	public NewTopic baseOrchestratorTopic() {
+		return buildTopic(ETopics.BASE_ORCHESTRATOR.getTopic());
+	}
+
+	@Bean
+	public NewTopic finishSuccessTopic() {
+		return buildTopic(ETopics.FINISH_SUCCESS.getTopic());
+	}
+
 	@Bean
 	public NewTopic productValidationSuccessTopic() {
-		return buildTopic(productValidationSuccessTopic);
+		return buildTopic(ETopics.PRODUCT_VALIDATION_SUCCESS.getTopic());
 	}
-	
+
 	@Bean
 	public NewTopic productValidationFailTopic() {
-		return buildTopic(productValidationFailTopic);
+		return buildTopic(ETopics.PRODUCT_VALIDATION_FAIL.getTopic());
 	}
-	
+
+	@Bean
+	public NewTopic paymentSuccessTopic() {
+		return buildTopic(ETopics.PAYMENT_SUCCESS.getTopic());
+	}
+
+	@Bean
+	public NewTopic paymentFailTopic() {
+		return buildTopic(ETopics.PAYMENT_FAIL.getTopic());
+	}
+
+	@Bean
+	public NewTopic inventorySuccessTopic() {
+		return buildTopic(ETopics.INVENTORY_SUCCESS.getTopic());
+	}
+
+	@Bean
+	public NewTopic inventoryFailTopic() {
+		return buildTopic(ETopics.INVENTORY_FAIL.getTopic());
+	}
+
+	@Bean
+	public NewTopic notifyEndingTopic() {
+		return buildTopic(ETopics.NOTIFY_ENDING.getTopic());
+	}
+
 }
