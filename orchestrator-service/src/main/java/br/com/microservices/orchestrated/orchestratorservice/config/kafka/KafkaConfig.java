@@ -91,6 +91,11 @@ public class KafkaConfig {
 	public NewTopic finishSuccessTopic() {
 		return buildTopic(ETopics.FINISH_SUCCESS.getTopic());
 	}
+	
+	@Bean
+	public NewTopic finishFailTopic() {
+		return buildTopic(ETopics.FINISH_FAIL.getTopic());
+	}
 
 	@Bean
 	public NewTopic productValidationSuccessTopic() {
