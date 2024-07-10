@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class JsonUtil {
 
-
 	private final ObjectMapper objectMapper;
 	
 	public String toJson(Object object) {

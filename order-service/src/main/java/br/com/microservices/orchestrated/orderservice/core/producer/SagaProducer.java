@@ -14,7 +14,7 @@ public class SagaProducer {
 
 	private final KafkaTemplate<String, String> kafkaTemplate;
 	
-	@Value("${spring.kafka.start-saga}")
+	@Value("${spring.kafka.topic.start-saga}")
 	private String startSagaTopic;
 	
 	public void sendEvent(String payload) {
