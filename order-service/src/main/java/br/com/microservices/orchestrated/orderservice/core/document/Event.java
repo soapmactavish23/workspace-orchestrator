@@ -15,17 +15,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collation = "event")
+@Document(collection = "event")
 public class Event {
 
-	@Id
-	private String id;
-	private String transactionId;
-	private String orderId;
-	private Order payload;
-	private String source;
-	private String status;
-	private List<History> eventHistory;
-	private LocalDateTime createdAt;
-	
+    @Id
+    private String id;
+    private String transactionId;
+    private String orderId;
+    private Order payload;
+    private String source;
+    private String status;
+    private List<History> eventHistory;
+    private LocalDateTime createdAt;
 }

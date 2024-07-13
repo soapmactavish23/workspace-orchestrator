@@ -1,6 +1,7 @@
 package br.com.microservices.orchestrated.orderservice.core.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,7 @@ public class OrderController {
 	private final OrderService service;
 	
 	@PostMapping
-	public Order createOrder(OrderRequest orderRequest) {
+	public Order createOrder(@RequestBody OrderRequest orderRequest) {
 		return service.createOrder(orderRequest);
 	}
 	
