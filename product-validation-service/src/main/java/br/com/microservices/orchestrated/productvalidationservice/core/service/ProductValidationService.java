@@ -1,4 +1,4 @@
-package br.com.microservices.orchestrated.productvalidationservice.core;
+package br.com.microservices.orchestrated.productvalidationservice.core.service;
 
 import java.time.LocalDateTime;
 
@@ -69,39 +69,53 @@ public class ProductValidationService {
 			throw new ValidationException("Product must be informed!");
 		}
 	}
-	
+
 	private void validateExistingProduct(String code) {
-		if(productRepository.existsByCode(code)) {
+		if (productRepository.existsByCode(code)) {
 			throw new ValidationException("Product does not exists in database!");
 		}
 	}
-	
+
 	private void createValidation(Event event, boolean success) {
-		var validation = Validation
-				.builder()
-				.orderId(event.getPayload().getId())
-				.transactionId(event.getTransactionId())
-				.success(success)
-				.build();
+		var validation = Validation.builder().orderId(event.getPayload().getId())
+				.transactionId(event.getTransactionId()).success(success).build();
 		validationRepository.save(validation);
 	}
-	
+
 	private void handleSuccess(Event event) {
 		event.setStatus(ESagaStatus.SUCCESS);
 		event.setSource(CURRENT_SOURCE);
 		addHistory(event, "Products are validated successfully!");
 	}
-	
+
 	private void addHistory(Event event, String message) {
-		var history = History
-				.builder()
-				.source(event.getSource())
-				.status(event.getStatus())
-				.message(message)
-				.createdAt(LocalDateTime.now())
-				.build();
-		
+		var history = History.builder().source(event.getSource()).status(event.getStatus()).message(message)
+				.createdAt(LocalDateTime.now()).build();
+
 		event.addToHistory(history);
+	}
+
+	private void handleFailCurrentNotExecuted(Event event, String message) {
+		event.setStatus(ESagaStatus.ROLLBACK_PENDING);
+		event.setSource(CURRENT_SOURCE);
+		addHistory(event, "Fail to validate products: " + message);
+	}
+
+	public void rollbackEvent(Event event) {
+		changeValidationToFail(event);
+		event.setStatus(ESagaStatus.FAIL);
+		event.setSource(CURRENT_SOURCE);
+		addHistory(event, "Rollback executed on product validation!");
+		producer.sendEvent(jsonUtil.toJson(event));
+	}
+
+	private void changeValidationToFail(Event event) {
+		validationRepository
+		.findByOrderIdAndTransactionId(event.getPayload().getId(), event.getTransactionId())
+		.ifPresentOrElse(validation -> {
+			validation.setSuccess(false);
+			validationRepository.save(validation);
+				}, () -> createValidation(event, false));
 	}
 
 }
