@@ -23,7 +23,9 @@ public class JsonUtil {
 	
 	public Event toEvent(String json) {
 		try {
-			return objectMapper.readValue(json, Event.class);
+			var epic = objectMapper.readValue(json, Event.class);
+			System.out.println(epic.toString());
+			return epic;
 		} catch (Exception e) {
 			return null;
 		}

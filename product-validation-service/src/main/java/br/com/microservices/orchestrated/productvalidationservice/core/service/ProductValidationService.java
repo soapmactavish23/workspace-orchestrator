@@ -1,5 +1,7 @@
 package br.com.microservices.orchestrated.productvalidationservice.core.service;
 
+import static org.springframework.util.ObjectUtils.isEmpty;
+
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
@@ -42,13 +44,12 @@ public class ProductValidationService {
 	}
 
 	private void validateProductsInformed(Event event) {
-		if (event.getPayload() == null || event.getPayload().getProducts().isEmpty()) {
-			throw new ValidationException("Product list is empty");
-		}
-
-		if (event.getPayload().getId().isBlank() || event.getPayload().getTransactionId().isBlank()) {
-			throw new ValidationException("OrderID and TransactionID must be informed!");
-		}
+		if (isEmpty(event.getPayload()) || isEmpty(event.getPayload().getProducts())) {
+            throw new ValidationException("Product list is empty!");
+        }
+        if (isEmpty(event.getPayload().getId()) || isEmpty(event.getTransactionId())) {
+            throw new ValidationException("OrderID and TransactionID must be informed!");
+        }
 	}
 
 	private void checkCurrentValidation(Event event) {
@@ -65,15 +66,15 @@ public class ProductValidationService {
 	}
 
 	private void validateProductInformed(OrderProducts product) {
-		if (product.getProduct() == null || product.getProduct().getCode().isBlank()) {
-			throw new ValidationException("Product must be informed!");
-		}
+		if (isEmpty(product.getProduct()) || isEmpty(product.getProduct().getCode())) {
+            throw new ValidationException("Product must be informed!");
+        }
 	}
 
 	private void validateExistingProduct(String code) {
-		if (productRepository.existsByCode(code)) {
-			throw new ValidationException("Product does not exists in database!");
-		}
+		if (!productRepository.existsByCode(code)) {
+            throw new ValidationException("Product does not exists in database!");
+        }
 	}
 
 	private void createValidation(Event event, boolean success) {
