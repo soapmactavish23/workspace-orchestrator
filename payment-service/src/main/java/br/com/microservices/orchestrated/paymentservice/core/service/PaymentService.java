@@ -33,7 +33,7 @@ public class PaymentService {
 	public void realizePayment(Event event) {
 
 		try {
-			checkCurrentValidation(event);
+			checkCurrentValidation(event); // Teste
 			createPendingPayment(event);
 			var payment = findByOrderIdAndTransactionId(event);
 			validateAmount(payment.getTotalAmount());
