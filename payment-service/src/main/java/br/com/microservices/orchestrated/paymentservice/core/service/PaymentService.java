@@ -31,7 +31,6 @@ public class PaymentService {
 	private final PaymentRepository paymentRepository;
 
 	public void realizePayment(Event event) {
-
 		try {
 			checkCurrentValidation(event); // Teste
 			createPendingPayment(event);
@@ -41,8 +40,8 @@ public class PaymentService {
 			handleSuccess(event);
 		} catch (Exception ex) {
 			log.error("Error trying to make payment: ", ex);
+			handleFailCurrentNotExecuted(event, ex.getMessage());
 		}
-
 		producer.sendEvent(CURRENT_SOURCE);
 	}
 
@@ -76,9 +75,9 @@ public class PaymentService {
 		event.getPayload().setTotalAmount(payment.getTotalAmount());
 		event.getPayload().setTotalItems(payment.getTotalItems());
 	}
-	
+
 	private void validateAmount(double amount) {
-		if(amount < 0.1) {
+		if (amount < 0.1) {
 			throw new ValidationException("The minimun amount available is ".concat(MIN_AMOUNT_VALUE.toString()));
 		}
 	}
@@ -87,27 +86,42 @@ public class PaymentService {
 		payment.setStatus(EPaymentStatus.SUCCESS);
 		save(payment);
 	}
-	
+
 	private void handleSuccess(Event event) {
 		event.setStatus(ESagaStatus.SUCCESS);
 		event.setSource(CURRENT_SOURCE);
 		addHistory(event, "Payment realized successfully!");
 	}
-	
+
 	private void addHistory(Event event, String message) {
-		var history = History
-				.builder()
-				.source(event.getSource())
-				.status(event.getStatus())
-				.message(message)
-				.createdAt(LocalDateTime.now())
-				.build();
+		var history = History.builder().source(event.getSource()).status(event.getStatus()).message(message)
+				.createdAt(LocalDateTime.now()).build();
 		event.addToHistory(history);
 	}
 
+	private void handleFailCurrentNotExecuted(Event event, String message) {
+		event.setStatus(ESagaStatus.ROLLBACK_PENDING);
+		event.setSource(CURRENT_SOURCE);
+		addHistory(event, "Fail to realize payment: ".concat(message));
+	}
+
+	public void realizeRefund(Event event) {
+		changePaymentStatusToRefund(event);
+		event.setStatus(ESagaStatus.FAIL);
+		event.setSource(CURRENT_SOURCE);
+		addHistory(event, "Rollback executed for payment!");
+		producer.sendEvent(jsonUtil.toJson(event));
+	}
+
+	private void changePaymentStatusToRefund(Event event) {
+		Payment payment = findByOrderIdAndTransactionId(event);
+		payment.setStatus(EPaymentStatus.REFUND);
+		setEventAmountItems(event, payment);
+		save(payment);
+	}
+
 	private Payment findByOrderIdAndTransactionId(Event event) {
-		return paymentRepository
-				.findByOrderIdAndTransactionId(event.getPayload().getId(), event.getTransactionId())
+		return paymentRepository.findByOrderIdAndTransactionId(event.getPayload().getId(), event.getTransactionId())
 				.orElseThrow(() -> new ValidationException("Payment not found by OrderID and TransactionID"));
 	}
 
