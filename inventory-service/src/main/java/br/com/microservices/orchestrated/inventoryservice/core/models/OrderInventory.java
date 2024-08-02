@@ -13,11 +13,13 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "order_inventory")
@@ -38,13 +40,13 @@ public class OrderInventory {
 	private String transactionId;
 	
 	@Column(nullable = false)
-	private String orderQuantity;
+	private Integer orderQuantity;
 	
 	@Column(nullable = false)
-	private String oldQuantity;
+	private Integer oldQuantity;
 	
 	@Column(nullable = false)
-	private String newQuantity;
+	private Integer newQuantity;
 	
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
