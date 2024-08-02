@@ -25,7 +25,7 @@ public class InvetoryConsumer {
 		var event = jsonUtil.toEvent(payload);
 		inventoryService.updateInventory(event);
 	}
-	
+
 	@KafkaListener(
 			groupId = "${spring.kafka.consumer.group-id}",
 			topics = "${spring.kafka.topic.inventory-fail}"
