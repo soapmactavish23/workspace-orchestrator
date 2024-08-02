@@ -3,6 +3,7 @@ package br.com.microservices.orchestrated.inventoryservice.core.consumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import br.com.microservices.orchestrated.inventoryservice.core.service.InventoryService;
 import br.com.microservices.orchestrated.inventoryservice.core.utils.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public class InvetoryConsumer {
 
+	private final InventoryService inventoryService;
 	private final JsonUtil jsonUtil;
 	
 	@KafkaListener(
@@ -21,7 +23,7 @@ public class InvetoryConsumer {
 	public void consumeSuccessEvent(String payload) {
 		log.info("Receiving success event {} from inventory-success topic", payload);
 		var event = jsonUtil.toEvent(payload);
-		log.info(event.toString());
+		inventoryService.updateInventory(event);
 	}
 	
 	@KafkaListener(
@@ -31,7 +33,7 @@ public class InvetoryConsumer {
 	public void consumeFailEvent(String payload) {
 		log.info("Receiving fail event {} from inventory-fail topic", payload);
 		var event = jsonUtil.toEvent(payload);
-		log.info(event.toString());
+		inventoryService.rollbackInventory(event);
 	}
 	
 	
