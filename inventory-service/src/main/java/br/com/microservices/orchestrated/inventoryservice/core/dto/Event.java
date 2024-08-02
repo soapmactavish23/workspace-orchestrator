@@ -24,4 +24,8 @@ public class Event {
 	private List<History> eventHistory;
 	private LocalDateTime createdAt;
 	
+	public void addToHistory(History history) {
+		eventHistory.add(history);
+	}
+	
 }
