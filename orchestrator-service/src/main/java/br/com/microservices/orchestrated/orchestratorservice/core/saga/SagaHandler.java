@@ -10,7 +10,7 @@ public final class SagaHandler {
 
 	}
 
-	public static final Object[][] SAGA_HANLDER = {
+	public static final Object[][] SAGA_HANDLER = {
 			{EEventSource.ORCHESTRATOR, ESagaStatus.SUCCESS, ETopics.PRODUCT_VALIDATION_SUCCESS},
 			{EEventSource.ORCHESTRATOR, ESagaStatus.SUCCESS, ETopics.FINISH_FAIL},
 			
